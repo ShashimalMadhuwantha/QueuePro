@@ -1,0 +1,139 @@
+.nav {
+    background: linear-gradient(90deg, #141e30, #243b55);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    top: 0;
+    padding: 10px;
+}
+
+
+
+.head h2 {
+    margin-left: 10px;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 2px;
+}
+
+.nav-items ul {
+    list-style: none;
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.nav-items ul li {
+    margin-right: 20px;
+}
+
+.nav-items ul li a {
+    color: #c7c7e2;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.nav-items ul li a:hover {
+    color: #ff6f61;
+    text-shadow: 0 0 8px rgba(255, 111, 97, 0.5);
+}
+
+.nav-toggle {
+    display: none;
+    cursor: pointer;
+    color: #c7c7e2;
+}
+
+.nav-toggle ion-icon {
+    font-size: 28px;
+}
+
+.form-container {
+    place-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50%; /* Ensure form container takes full viewport height */
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(72, 218, 36, 0.808) ;
+    border-radius: 8px;
+}
+
+.form {
+    max-width: 50%; /* Adjusted to ensure responsiveness */
+    width: 50%;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(72, 218, 36, 0.808) ;
+    border-radius: 8px;
+}
+
+.form table {
+    width: 100%;
+    text-align: center;
+    margin: 0 auto; /* Center the table horizontally */
+}
+
+.form table td {
+    padding-right: 10px;
+    padding-bottom: 5px;
+}
+
+.names {
+    padding: 20px;
+    font-weight: bold;
+    color: #000000;
+}
+
+
+
+.btn input[type="submit"] {
+    background: rgb(37, 216, 20);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.btn input[type="submit"]:hover {
+    background: green;
+}
+
+/* Responsive navigation menu */
+@media (max-width: 768px) {
+    .nav-items ul {
+        flex-direction: column;
+        display: none;
+        background: #2c2c3e;
+        width: 100%;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        padding: 10px 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .nav-items ul.show {
+        display: flex;
+    }
+
+    .nav-toggle {
+        display: block;
+    }
+
+    .nav-toggle ion-icon {
+        text-align: end;
+        align-items: right;
+        display: block;
+        color: white;
+        cursor: pointer;
+        font-size: 28px;
+    }
+}

@@ -1,0 +1,120 @@
+/* External CSS for Admin Login Page */
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: 600% 600%;
+    overflow: hidden;
+}
+
+
+section {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 3rem;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(72, 218, 36, 0.808) ;
+    text-align: center;
+    width: 350px;
+    backdrop-filter: blur(10px);
+    animation: floating 3s ease-in-out infinite;
+}
+
+h1 {
+    padding-bottom: 10px;
+    margin-bottom: 3rem;
+    color: #00ffff;
+    font-size: 2rem;
+}
+
+.inputbox {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.inputbox ion-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: black;
+}
+
+.inputbox input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid #000000;
+    outline: none;
+    color: black;
+    font-size: 1rem;
+}
+
+.inputbox label {
+    position: absolute;
+    left: 3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: black;
+    pointer-events: none;
+    transition: 0.3s;
+    font-size: 1rem;
+}
+
+.inputbox input:focus + label,
+.inputbox input:not(:placeholder-shown) + label {
+    top: -8px;
+    left: 3rem;
+    font-size: 1rem;
+    color: black;
+}
+
+input:-webkit-autofill {
+    box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.1) inset !important;
+    -webkit-text-fill-color: black !important;
+}
+
+.btn {
+    position: relative;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 5px;
+    background: #00ffff;
+    color: #0f0f0f;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.3s, visibility 0.3s;
+    opacity: 0;
+    visibility: hidden;
+    overflow: hidden;
+}
+
+.btn.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.inputbox ion-icon.eye-icon {
+    right: 10px;
+    left: auto;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.eye-icon:hover {
+    color: black;
+    transform: rotate(360deg);
+}
+
+@keyframes floating {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+}
