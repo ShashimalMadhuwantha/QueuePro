@@ -144,7 +144,7 @@ if (isset($_POST["btnatupdate"])) {
 
         // Prepare email and SMS data
         $email_data = [];
-     
+        $sms_data = [];
 
         while ($row = mysqli_fetch_assoc($result)) {
             $email_data[] = [
@@ -154,6 +154,25 @@ if (isset($_POST["btnatupdate"])) {
                 'Arrival_Time' => $arrivaltime,
                 'Clinic_Date' => $row['Date']
             ];
+
+            $formatted_contact_no = preg_replace('/^0/', '94', $row['Contact_NO']); 
+            $sms_data[] = [
+                'First_Name' => $row['First_Name'],
+                'Last_Name' => $row['Last_Name'],
+                'Contact_NO' => $formatted_contact_no,
+                'Clinic_Date' => $row['Date']
+            ];
+        }
+        // Send SMS
+        $user = "94783522092";  
+        $password = "6362";    
+        $baseurl = "https://www.textit.biz/sendmsg";
+        
+        foreach ($sms_data as $data) {
+            $text = urlencode("Dear {$data['First_Name']} {$data['Last_Name']},\nDoctor's Arrival Time for {$data['Clinic_Date']} has been changed to {$arrivaltime}.\nPlease be on time for your appointment. \nThank you!\nBest Regards,\nQueuePro.");
+            $url = "$baseurl/?id=$user&pw=$password&to={$data['Contact_NO']}&text=$text";
+            $ret = file($url);
+            $res = explode(":", $ret[0]);
 
         }
 
