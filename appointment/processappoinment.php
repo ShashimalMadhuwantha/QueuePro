@@ -91,6 +91,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$clinicID, $scheduleID]);
     $clinic_details = $stmt->fetch();
 
+    //format mobile number
+    $formatted_contact_no = preg_replace('/^0/', '94', $contact_no);
+
+    // Prepare SMS content
+    $text = urlencode("Dear $first_name $last_name,\nYour appointment is confirmed with Doctor ". $clinic_details['first_name'] .' '. $clinic_details['last_name'] . "\nDate: " . $clinic_details['Date']." at " . $clinic_details['Start_Time'] . " \n Room Number: " . $clinic_details['Room_Number'] . ".\n Your Waiting Number is: " . $queue_number . "\nBest Regards,\nQueuePro");
+    
+    // Send SMS
+    $user = "94783522092";  
+    $password = "6362";     
+    $num = $formatted_contact_no;
+    $baseurl = "https://www.textit.biz/sendmsg";
+    $url = "$baseurl/?id=$user&pw=$password&to=$num&text=$text";
+    $ret = file($url);
+
+    $res = explode(":", $ret[0]);
+
 
     // Prepare data for EmailJS
     $email_js_data = json_encode([
