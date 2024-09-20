@@ -425,11 +425,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $ret = file($url);
                         $res = explode(":", $ret[0]);
             
-                        // if (trim($res[0]) == "OK") {
-                        //     echo '<script>alert("SMS Sent - ID: ' . $res[1] . '");</script>';
-                        // } else {
-                        //     echo '<script>alert("SMS Failed - Error: ' . $res[1] . '");</script>';
-                        // }
+                       
                     }
         
                     mysqli_stmt_close($stmt);
