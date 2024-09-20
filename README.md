@@ -21,4 +21,4 @@ QueuePro is a system designed to minimize patient wait times, enhancing the heal
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/lasindu-themiya/QueuePro.git
-   cd queuepro
+   cd QueuePro
