@@ -15,7 +15,7 @@ if ($con->connect_error) {
     die("Connection failed: " . $con->connect_error);
 }
 
-$sql = "SELECT p.First_Name AS PatientFirstName, p.Last_Name AS PatientLastName, c.Start_Time, d.First_Name AS DoctorFirstName, d.Last_Name AS DoctorLastName, c.Room_Number 
+$sql = "SELECT p.First_Name AS PatientFirstName, p.Last_Name AS PatientLastName, c.Start_Time, d.First_Name AS DoctorFirstName, d.Last_Name AS DoctorLastName, c.Room_Number, a.Date_and_Time
         FROM patient p 
         JOIN appointment a ON p.Patient_ID = a.Patient_ID
         JOIN schedule s ON a.Schedule_ID = s.SID
@@ -171,6 +171,7 @@ if ($result === false) {
                 echo "<p>Doctor: Dr. " . htmlspecialchars($row['DoctorFirstName']) . " " . htmlspecialchars($row['DoctorLastName']) . "</p>";
                 echo "<p>Start Time: " . htmlspecialchars($row['Start_Time']) . "</p>";
                 echo "<p>Room Number: " . htmlspecialchars($row['Room_Number']) . "</p>";
+                echo "<p>Date: " . htmlspecialchars($row['Date_and_Time']) . "</p>";
                 echo "</div>";
             }
         } else {
