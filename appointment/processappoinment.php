@@ -29,17 +29,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contact_no = $_POST['contact_no'] ?? '';
     $age = $_POST['age'] ?? '';
 
-    setcookie("first_name", $first_name, time() + 86400, "/","", 0);
-    setcookie("last_name", $last_name, time() + 86400, "/","", 0);
-    
-    // Generate auto-incremented Patient_ID
-    $stmt = $pdo->query("SELECT MAX(CAST(SUBSTRING(Patient_ID, 2) AS UNSIGNED)) AS max_id FROM patient");
-    $row = $stmt->fetch();
-    $patient_id = 'P' . str_pad($row['max_id'] + 1, 7, '0', STR_PAD_LEFT);
+    setcookie("first_name", $first_name, time() + 86400, "/", "", 0);
+    setcookie("last_name", $last_name, time() + 86400, "/", "", 0);
 
-    // Insert patient details into the patient table
-    $stmt = $pdo->prepare("INSERT INTO patient (Patient_ID, First_Name, Last_Name, City, NIC, Email, Contact_NO, Age) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$patient_id, $first_name, $last_name, $city, $nic, $email, $contact_no, $age]);
+    // Check if patient with the entered email or first name and last name already exists
+    $stmt = $pdo->prepare("SELECT Patient_ID FROM patient WHERE NIC=?");
+    $stmt->execute([$nic]);
+    $existing_patient = $stmt->fetch();
+
+    if ($existing_patient) {
+        $patient_id = $existing_patient['Patient_ID'];
+    } else {
+        // Generate a new Patient_ID
+        $stmt = $pdo->query("SELECT MAX(CAST(SUBSTRING(Patient_ID, 2) AS UNSIGNED)) AS max_id FROM patient");
+        $row = $stmt->fetch();
+        $patient_id = 'P' . str_pad($row['max_id'] + 1, 7, '0', STR_PAD_LEFT);
+
+        // Insert new patient details into the patient table
+        $stmt = $pdo->prepare("INSERT INTO patient (Patient_ID, First_Name, Last_Name, City, NIC, Email, Contact_NO, Age) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$patient_id, $first_name, $last_name, $city, $nic, $email, $contact_no, $age]);
+    }
+
 
     // Generate auto-incremented Appointment_ID
     $stmt = $pdo->query("SELECT MAX(CAST(SUBSTRING(Appointment_ID, 3) AS UNSIGNED)) AS max_id FROM appointment");
@@ -53,50 +63,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare("INSERT INTO appointment (Appointment_ID, Patient_ID, Schedule_ID, Clinic_ID, Doctor_ID, Date_and_Time) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->execute([$appointment_id, $patient_id, $scheduleID, $clinicID, $doctorID, $date_and_time]);
 
+    // Get the current highest queue number for the clinic
+    $stmt = $pdo->prepare("SELECT MAX(QueueNo) AS max_queue FROM queue WHERE CID = ? AND SID = ?");
+    $stmt->execute([$clinicID, $scheduleID]);
+    $row = $stmt->fetch();
 
-   // Get the current highest queue number for the clinic
-   $stmt = $pdo->prepare("SELECT MAX(QueueNo) AS max_queue FROM queue WHERE CID = ? AND SID = ?");
-   $stmt->execute([$clinicID, $scheduleID]);
-   $row = $stmt->fetch();
-   
-   // Increment the max_queue and add two leading zeros
-   $queue_number = sprintf('%03d', $row['max_queue'] + 1);
+    // Increment the max_queue and add two leading zeros
+    $queue_number = sprintf('%03d', $row['max_queue'] + 1);
 
-   $query_max_id = "SELECT MAX(SUBSTRING(QID, 2)) AS max_id FROM queue WHERE QID LIKE 'Q%'";
-   $result = mysqli_query($con, $query_max_id);
-   $row = mysqli_fetch_assoc($result);
-   $max_id = $row['max_id'];
+    // Incrementing Queue ID
+    $query_max_id = "SELECT MAX(SUBSTRING(QID, 2)) AS max_id FROM queue WHERE QID LIKE 'Q%'";
+    $result = $pdo->query($query_max_id);
+    $row = $result->fetch();
+    $max_id = $row['max_id'];
 
-   // Incrementing Admin ID
-   if ($max_id === null) {
-   
-       $next_id = 'Q001';
-   } else {
-       // Increment the last ID found
-       $next_id = 'Q' . str_pad((int)$max_id + 1, 3, '0', STR_PAD_LEFT);
-   }
-   
+    if ($max_id === null) {
+        $next_id = 'Q001';
+    } else {
+        $next_id = 'Q' . str_pad((int)$max_id + 1, 3, '0', STR_PAD_LEFT);
+    }
 
-   // Insert the queue details into the queue table
-   $stmt = $pdo->prepare("INSERT INTO queue (QID,CID, SID, PID, QueueNo) VALUES (?,?, ?, ?, ?)");
-   $stmt->execute([$next_id,$clinicID, $scheduleID, $patient_id, $queue_number]);
+    // Insert the queue details into the queue table
+    $stmt = $pdo->prepare("INSERT INTO queue (QID, CID, SID, PID, QueueNo) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$next_id, $clinicID, $scheduleID, $patient_id, $queue_number]);
 
     // Fetch additional details for the email
-    $stmt = $pdo->prepare("SELECT d.First_Name AS first_name, d.Last_name AS last_name ,c.Date, c.Room_Number, c.Start_Time
+    $stmt = $pdo->prepare("SELECT d.First_Name AS first_name, d.Last_Name AS last_name, c.Date, c.Room_Number, c.Start_Time
     FROM clinic c
     JOIN schedule s ON c.SID = s.SID
     JOIN doctorlogin d ON s.DID = d.DID
     WHERE c.CID = ? AND c.SID = ?");
-
     $stmt->execute([$clinicID, $scheduleID]);
     $clinic_details = $stmt->fetch();
 
-    //format mobile number
+
     $formatted_contact_no = preg_replace('/^0/', '94', $contact_no);
 
     // Prepare SMS content
-    $text = urlencode("Dear $first_name $last_name,\nYour appointment is confirmed with Doctor ". $clinic_details['first_name'] .' '. $clinic_details['last_name'] . "\nDate: " . $clinic_details['Date']." at " . $clinic_details['Start_Time'] . " \n Room Number: " . $clinic_details['Room_Number'] . ".\n Your Waiting Number is: " . $queue_number . "\nBest Regards,\nQueuePro");
-    
+    $text = urlencode("Dear $first_name $last_name,\nYour appointment is confirmed with Doctor " . $clinic_details['first_name'] . ' ' . $clinic_details['last_name'] . "\nDate: " . $clinic_details['Date'] . " at " . $clinic_details['Start_Time'] . " \n Room Number: " . $clinic_details['Room_Number'] . ".\n Your Waiting Number is: " . $queue_number . "\nBest Regards,\nQueuePro");
+
     // Send SMS
     $user = "94783522092";  
     $password = "6362";     
@@ -105,16 +110,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $url = "$baseurl/?id=$user&pw=$password&to=$num&text=$text";
     $ret = file($url);
 
-    $res = explode(":", $ret[0]);
-
-
     // Prepare data for EmailJS
     $email_js_data = json_encode([
         'email' => $email,
         'first_name' => $first_name,
         'last_name' => $last_name,
         'queue_number' => $queue_number,
-        'doctor_name' => $clinic_details['first_name'] .' '. $clinic_details['last_name'],
+        'doctor_name' => $clinic_details['first_name'] . ' ' . $clinic_details['last_name'],
         'clinic_date' => $clinic_details['Date'],
         'room_number' => $clinic_details['Room_Number'],
         'start_time' => $clinic_details['Start_Time']
@@ -123,8 +125,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Generate QR code containing CID, SID, and QueueNo
     $qr_content = "CID={$clinicID}&SID={$scheduleID}&QueueNo={$queue_number}";
     $qr_code_url = "https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=" . urlencode($qr_content);
-
-    
 } else {
     // Retrieve query parameters from URL
     $doctorID = $_GET['doctorID'] ?? '';
@@ -178,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             emailjs.send('service_6l79cl3', 'template_6nalxfc', params)
                 .then(function(response) {
-                    // alert('Your Number has been sent to your email!');
+
                     window.location.href = 'success.php';
                 }, function(error) {
                     alert('Failed to send details. Please try again later.');
@@ -295,6 +295,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required>
 
+
         <label for="contact_no">Contact No:</label>
         <input type="text" id="contact_no" name="contact_no" required>
 
@@ -313,10 +314,9 @@ if(isset($_POST["submit"])){
     $updateQuery = "UPDATE clinic SET P_Limit = P_Limit - 1 WHERE CID = '$clinicID'";
     if (mysqli_query($con, $updateQuery)) {
         if ($updateQuery && mysqli_affected_rows($con) > 0) {
-            // echo "Appointment made successfully!";
-            // Redirect to another page or show a success message
+            
         } else {
-            // echo "Failed to update patient limit.";
+        
         }
     } else {
         echo "Error: " . mysqli_error($con);
