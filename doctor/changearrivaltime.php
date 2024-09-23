@@ -67,15 +67,15 @@ if (!isset($_SESSION['UserDID'])) {
                         $userDID = mysqli_real_escape_string($con, $_SESSION['UserDID']);
                         $current_date = date('Y-m-d');
 
-                        $query = "SELECT CID, Date
+                        $query = "SELECT clinic.CID, clinic.Date, clinic.Start_Time
                                   FROM clinic
                                   INNER JOIN schedule ON clinic.SID = schedule.SID
-                                  WHERE schedule.DID = '$userDID' AND clinic.Date >= '$current_date'";
+                                  WHERE schedule.DID = '$userDID' AND clinic.Date >= '$current_date' AND clinic.Current_State = 'OnGoing'";
                         $result = mysqli_query($con, $query);
 
                         if ($result && mysqli_num_rows($result) > 0) {
                             while ($row = mysqli_fetch_assoc($result)) {
-                                echo "<option value='{$row['CID']}'>{$row['Date']}</option>";
+                                echo "<option value='{$row['CID']}'>{$row['Date']} - {$row['Start_Time']}</option>";
                             }
                         }
 
@@ -126,7 +126,6 @@ if (isset($_POST["btnatupdate"])) {
         mysqli_stmt_execute($stmt2);
 
         
-
         // Retrieve patient emails and telephone numbers
         $query3 = "SELECT patient.Email, patient.First_Name, patient.Last_Name, patient.Contact_NO, clinic.Date 
                    FROM appointment
@@ -151,7 +150,7 @@ if (isset($_POST["btnatupdate"])) {
                 'Clinic_Date' => $row['Date']
             ];
 
-            $formatted_contact_no = preg_replace('/^0/', '94', $row['Contact_NO']); 
+            $formatted_contact_no = preg_replace('/^0/', '94', $row['Contact_NO']); // Format phone number
             $sms_data[] = [
                 'First_Name' => $row['First_Name'],
                 'Last_Name' => $row['Last_Name'],
@@ -159,6 +158,7 @@ if (isset($_POST["btnatupdate"])) {
                 'Clinic_Date' => $row['Date']
             ];
         }
+
         // Send SMS
         $user = "94783522092";  
         $password = "6362";    
@@ -170,9 +170,8 @@ if (isset($_POST["btnatupdate"])) {
             $ret = file($url);
             $res = explode(":", $ret[0]);
 
+           
         }
-
-       
 
         // Commit the transaction
         mysqli_commit($con);
