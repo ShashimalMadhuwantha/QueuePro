@@ -87,10 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare("INSERT INTO queue (QID, CID, SID, PID, QueueNo) VALUES (?, ?, ?, ?, ?)");
     $stmt->execute([$next_id, $clinicID, $scheduleID, $patient_id, $queue_number]);
 
-    // Generate QR code containing CID, SID, and QueueNo
-    $qr_content = "CID={$clinicID}&SID={$scheduleID}&QueueNo={$queue_number}";
-    $qr_code_url = "https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=" . urlencode($qr_content);
-
     // Fetch additional details for the email
     $stmt = $pdo->prepare("SELECT d.First_Name AS first_name, d.Last_Name AS last_name, c.Date, c.Room_Number, c.Start_Time
     FROM clinic c
@@ -104,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $formatted_contact_no = preg_replace('/^0/', '94', $contact_no);
 
     // Prepare SMS content
-    $text = urlencode("Dear $first_name $last_name,\nYour appointment is confirmed with Doctor " . $clinic_details['first_name'] . ' ' . $clinic_details['last_name'] . "\nDate: " . $clinic_details['Date'] . " at " . $clinic_details['Start_Time'] . " \n Room Number: " . $clinic_details['Room_Number'] . ".\n Your Waiting Number is: " . $queue_number . ".\n Qr Code link:$qr_code_url "."\nBest Regards,\nQueuePro");
+    $text = urlencode("Dear $first_name $last_name,\nYour appointment is confirmed with Doctor " . $clinic_details['first_name'] . ' ' . $clinic_details['last_name'] . "\nDate: " . $clinic_details['Date'] . " at " . $clinic_details['Start_Time'] . " \n Room Number: " . $clinic_details['Room_Number'] . ".\n Your Waiting Number is: " . $queue_number . "\nBest Regards,\nQueuePro");
 
     // Send SMS
     $user = "94783522092";  
@@ -126,7 +122,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'start_time' => $clinic_details['Start_Time']
     ]);
 
-    
+    // Generate QR code containing CID, SID, and QueueNo
+    $qr_content = "CID={$clinicID}&SID={$scheduleID}&QueueNo={$queue_number}";
+    $qr_code_url = "https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=" . urlencode($qr_content);
 } else {
     // Retrieve query parameters from URL
     $doctorID = $_GET['doctorID'] ?? '';
