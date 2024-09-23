@@ -165,7 +165,7 @@ if (isset($_POST["btnupdate"]) || isset($_POST["btndelete"]) || isset($_POST["bt
             // Use prepared statements to prevent SQL injection
             $query = "DELETE FROM adminlogin WHERE AID = ?";
             $stmt = mysqli_prepare($con, $query);
-            mysqli_stmt_bind_param($stmt,'s',$id);
+            mysqli_stmt_bind_param($stmt,"s",$id);
             mysqli_stmt_execute($stmt);
             $result=mysqli_stmt_affected_rows($stmt);
 
