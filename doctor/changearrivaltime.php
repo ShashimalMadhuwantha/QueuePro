@@ -125,11 +125,7 @@ if (isset($_POST["btnatupdate"])) {
         mysqli_stmt_bind_param($stmt2, "ss", $arrivaltime, $_SESSION['UserDID']);
         mysqli_stmt_execute($stmt2);
 
-        // Update the schedule table
-        $query4 = "UPDATE schedule SET Start_Time = ? WHERE DID = ?";
-        $stmt4 = mysqli_prepare($con, $query4);
-        mysqli_stmt_bind_param($stmt4, "ss", $arrivaltime, $_SESSION['UserDID']);
-        mysqli_stmt_execute($stmt4);
+        
 
         // Retrieve patient emails and telephone numbers
         $query3 = "SELECT patient.Email, patient.First_Name, patient.Last_Name, patient.Contact_NO, clinic.Date 
