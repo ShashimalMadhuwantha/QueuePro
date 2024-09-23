@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 // Get the current date
 $current_date = date('Y-m-d');
 
-$details = "SELECT clinic.*, doctorlogin.DID, doctorlogin.First_Name, doctorlogin.Last_Name, schedule.SID, schedule.Target_Patient_Type, schedule.Start_Time
+$details = "SELECT clinic.*, doctorlogin.DID, doctorlogin.First_Name, doctorlogin.Last_Name, schedule.SID, schedule.Target_Patient_Type, clinic.Start_Time
             FROM schedule
             INNER JOIN clinic ON schedule.SID = clinic.SID
             INNER JOIN doctorlogin ON schedule.DID = doctorlogin.DID
