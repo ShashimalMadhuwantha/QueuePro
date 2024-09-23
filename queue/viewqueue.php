@@ -12,7 +12,7 @@ if (!$con) {
 $current_date = date('Y-m-d');
 $current_time = date('H:i:s');
 
-$details = "SELECT clinic.*, doctorlogin.DID, doctorlogin.First_Name, doctorlogin.Last_Name, schedule.SID, schedule.Target_Patient_Type, schedule.Start_Time, schedule.Duration
+$details = "SELECT clinic.*, doctorlogin.DID, doctorlogin.First_Name, doctorlogin.Last_Name, schedule.SID, schedule.Target_Patient_Type, clinic.Start_Time, schedule.Duration
             FROM schedule
             INNER JOIN clinic ON schedule.SID = clinic.SID
             INNER JOIN doctorlogin ON schedule.DID = doctorlogin.DID
