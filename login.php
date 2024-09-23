@@ -3,114 +3,120 @@ session_start();
 require 'connections/connection.php';
 
 if (isset($_POST["btnlogin"])) {
-    $uname = $_POST["txtusername"];
-    $pass = $_POST["txtpass"];
+    $uname = trim($_POST["txtusername"]); 
+    $pass = trim($_POST["txtpass"]);
    
-    
-
     if (!$con) {
         die("Connection failed: " . mysqli_connect_error());
     }
 
     // Admin login check
-    $query = "SELECT * FROM adminlogin WHERE Username='$uname'";
-    $result = mysqli_query($con, $query);
+    $query = "SELECT * FROM adminlogin WHERE Username = ?";
+    $stmtadmin = mysqli_prepare($con, $query);
+    mysqli_stmt_bind_param($stmtadmin, 's', $uname);
+    mysqli_stmt_execute($stmtadmin);
+    $result = mysqli_stmt_get_result($stmtadmin);
 
     if ($result && $row = mysqli_fetch_assoc($result)) {
         $blocked = $row['blocked'];
 
-        if ($blocked) 
-        {
+        if ($blocked) {
             echo "<script>alert('Your account is blocked. Please contact the administrator.')</script>";
-        } 
-        else 
-        {
+        } else {
             // Check credentials
-            if ($row['Password'] === $pass) 
-            {
+            if ($row['Password'] === $pass) {
                 $_SESSION["Username"] = $uname;
                 $_SESSION["UserID"] = $row['AID'];
                 $_SESSION["time"] = time();
 
                 header("Location: admin/AdminPanel.php");
                 exit();
-            } 
-            else
-            {
+            } else {
                 // Increment login attempts
-                $query = "UPDATE adminlogin SET login_attempts = login_attempts + 1 WHERE Username='$uname'";
-                mysqli_query($con, $query);
+                $query = "UPDATE adminlogin SET login_attempts = login_attempts + 1 WHERE Username=?";
+                $stmtupdate = mysqli_prepare($con, $query);
+                mysqli_stmt_bind_param($stmtupdate, 's', $uname);
+                mysqli_stmt_execute($stmtupdate);
+                mysqli_stmt_close($stmtupdate);
 
                 // Check if login attempts exceed limit
-                $query = "SELECT login_attempts FROM adminlogin WHERE Username='$uname'";
-                $result = mysqli_query($con, $query);
+                $query = "SELECT login_attempts FROM adminlogin WHERE Username=?";
+                $stmtcheck = mysqli_prepare($con, $query);
+                mysqli_stmt_bind_param($stmtcheck, 's', $uname);
+                mysqli_stmt_execute($stmtcheck);
+                $result = mysqli_stmt_get_result($stmtcheck);
                 $row = mysqli_fetch_assoc($result);
                 $login_attempts = $row['login_attempts'];
+                mysqli_stmt_close($stmtcheck);
 
-                if ($login_attempts >= 3) 
-                {
+                if ($login_attempts >= 3) {
                     // Block the user
-                    $query = "UPDATE adminlogin SET blocked = TRUE WHERE Username='$uname'";
-                    mysqli_query($con, $query);
+                    $query = "UPDATE adminlogin SET blocked = TRUE WHERE Username=?";
+                    $stmtblock = mysqli_prepare($con, $query);
+                    mysqli_stmt_bind_param($stmtblock, 's', $uname);
+                    mysqli_stmt_execute($stmtblock);
+                    mysqli_stmt_close($stmtblock);
+
                     echo "<script>alert('Your account has been blocked due to too many failed login attempts. Please contact the administrator.')</script>";
-                } 
-                else 
-                {
+                } else {
                     echo "<script>alert('Invalid Username or Password')</script>";
                 }
             }
         }
-    } 
-    else 
-    {
+    } else {
         // Doctor login check
-        $query = "SELECT * FROM doctorlogin WHERE First_Name='$uname'";
-        $result = mysqli_query($con, $query);
+        $query = "SELECT * FROM doctorlogin WHERE First_Name = ?";
+        $stmtdoc = mysqli_prepare($con, $query);
+        mysqli_stmt_bind_param($stmtdoc, 's', $uname);
+        mysqli_stmt_execute($stmtdoc);
+        $result = mysqli_stmt_get_result($stmtdoc);
 
-        if ($result && $row = mysqli_fetch_assoc($result)) 
-        {
-            if ($row['Password'] === $pass) 
-            {
+        if ($result && $row = mysqli_fetch_assoc($result)) {
+            if ($row['Password'] === $pass) {
                 $_SESSION["FName"] = $uname;
                 $_SESSION["UserDID"] = $row['DID'];
                 $_SESSION["time"] = time();
 
                 header("Location: doctor/doctorpanel.php");
                 exit();
-            }
-            else 
-            {
+            } else {
                 // Increment login attempts
-                $query = "UPDATE doctorlogin SET login_attempts = login_attempts + 1 WHERE First_Name='$uname'";
-                mysqli_query($con, $query);
+                $query = "UPDATE doctorlogin SET login_attempts = login_attempts + 1 WHERE First_Name=?";
+                $stmtupdate = mysqli_prepare($con, $query);
+                mysqli_stmt_bind_param($stmtupdate, 's', $uname);
+                mysqli_stmt_execute($stmtupdate);
+                mysqli_stmt_close($stmtupdate);
 
                 // Check if login attempts exceed limit
-                $query = "SELECT login_attempts FROM doctorlogin WHERE First_Name='$uname'";
-                $result = mysqli_query($con, $query);
+                $query = "SELECT login_attempts FROM doctorlogin WHERE First_Name=?";
+                $stmtcheck = mysqli_prepare($con, $query);
+                mysqli_stmt_bind_param($stmtcheck, 's', $uname);
+                mysqli_stmt_execute($stmtcheck);
+                $result = mysqli_stmt_get_result($stmtcheck);
                 $row = mysqli_fetch_assoc($result);
                 $login_attempts = $row['login_attempts'];
+                mysqli_stmt_close($stmtcheck);
 
-                if ($login_attempts >= 3) 
-                {
-                    // Redirect to contact administrator page
+                if ($login_attempts >= 3) {
+                    // Redirect to password reset page
                     header("Location: doctor/passwordreset.html");
                     exit();
-                } 
-                else 
-                {
+                } else {
                     echo "<script>alert('Invalid Username or Password')</script>";
                 }
             }
-        } 
-        else 
-        {
+        } else {
             echo "<script>alert('Invalid Username or Password')</script>";
         }
+
+        mysqli_stmt_close($stmtdoc);
     }
 
+    mysqli_stmt_close($stmtadmin);
     mysqli_close($con);
 }
 ?>
+
 
 
 <!DOCTYPE html>

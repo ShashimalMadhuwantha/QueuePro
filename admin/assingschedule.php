@@ -73,9 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    
 
-    // Refresh the page after processing form submission
     header("Refresh:0");
 }
 ?>

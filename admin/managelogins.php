@@ -188,9 +188,11 @@ if (isset($_POST["btnupdate"]) || isset($_POST["btndelete"]) || isset($_POST["bt
             // Block user by setting 'blocked' status to true (assuming 'blocked' column is a boolean)
             $blstatus = 1;
 
-            // Use prepared statements to prevent SQL injection
-            $query = "UPDATE adminlogin SET blocked = $blstatus WHERE AID = '$id'";
-            $result = mysqli_query($con, $query);
+            $query = "UPDATE adminlogin SET blocked = $blstatus WHERE AID = ?";
+            $stmtblock = mysqli_prepare($con, $query);
+            mysqli_stmt_bind_param($stmtblock, "s", $id);
+            mysqli_stmt_execute($stmtblock);
+            $result = mysqli_stmt_affected_rows($stmtblock);
 
             if ($result) {
                 echo "User Blocked: Admin ID - $id";
@@ -219,9 +221,11 @@ if (isset($_POST["btnupdate"]) || isset($_POST["btndelete"]) || isset($_POST["bt
             $blstatus = 0;
             $attempt=0;
 
-            // Use prepared statements to prevent SQL injection
-            $query = "UPDATE adminlogin SET blocked = $blstatus ,login_attempts=$attempt WHERE AID = '$id'";
-            $result = mysqli_query($con, $query);
+            $query = "UPDATE adminlogin SET blocked = $blstatus ,login_attempts=$attempt WHERE AID = ?";
+            $stmtunblovk = mysqli_prepare($con, $query);
+            mysqli_stmt_bind_param($stmtunblovk, "s", $id);
+            mysqli_stmt_execute($stmtunblovk);
+            $result = mysqli_stmt_affected_rows($stmtunblovk);
 
             if ($result) {
                 echo "User Unblocked: Admin ID - $id";
